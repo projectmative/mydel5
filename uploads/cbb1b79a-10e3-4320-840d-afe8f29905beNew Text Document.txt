@@ -1,0 +1,115 @@
+/* eslint-disable */
+import React, { Component } from 'react';
+import ChatTable from './ChatTableComponent'
+import { FormGroup, FormControl, Form, Button } from 'react-bootstrap'
+
+import axios from 'axios';
+import io  from "socket.io-client";
+const SERVER = "http://localhost:5000";
+
+ class chat extends Component {
+   constructor(props) {
+     super(props)
+   
+     this.state = {
+      messages: [],
+      newMessage: '',
+      socket:null
+     }
+     
+    this.setNewMessage = this.setNewMessage.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
+   }
+ 
+   componentDidMount() {
+
+   
+   
+    if (this.state.socket == null) {
+      this.state.socket = io(SERVER);
+    }
+    const name = "Arslan";
+    const myroom = "75";
+    const check = false;
+    const id = '789';
+   this.state.socket.emit("join", { name, myroom, check, id }, (error) => {
+      if (error) {
+        alert(error);
+      }
+    });
+
+
+    // this.socket.on('chat', message => {
+    //   message.key = JSON.stringify(message)
+    //   this.setState((prevState) => {
+    //     let messages = prevState.messages
+    //     messages.push(message)
+       
+    //   })
+    // })
+  }
+  componentDidUpdate(){
+  
+  }
+
+
+
+
+    
+  render() {
+    return (
+      <div>
+      <Form inline onSubmit={this.handleSubmit}>
+        <FormGroup>
+          {/* <ControlLabel>Message</ControlLabel>{' '} */}
+          <FormControl
+            id="message"
+            type="text"
+            label="Message"
+            placeholder="Enter your message"
+            onChange={this.setNewMessage}
+            value={this.state.newMessage}
+            autoComplete="off"
+          />
+        </FormGroup>
+        <Button type="submit">Send</Button>
+      </Form>
+
+      <ChatTable messages={this.state.messages} />
+    </div>
+                          
+    )
+  }
+
+  componentWillUnmount() {
+    this.state.socket.close()
+  }
+
+  setNewMessage(event) {
+    this.setState({
+      newMessage: event.target.value
+    })
+  }
+
+  handleSubmit(event) {
+    event.preventDefault();
+    this.setState({
+      newMessage: event.target.value
+    })
+   
+    if (this.state.messageInput !== "") {
+      const myroom = "75";
+      const msg = this.state.newMessage;
+      const check = false;
+      const id = "789";
+      const timeStamp = "11/13/2020";
+      const tuple = { myroom, msg, check, id, timeStamp };
+      this.state.socket.emit("sendMessage", tuple, () =>
+        this.setState({
+          newMessage: "",
+        })
+      );
+    }
+  }
+}
+export default chat;
